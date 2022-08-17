@@ -1,0 +1,17 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": "airbnb-base",
+    "overrides": [
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "id-match": ["error", "^([A-Z]|[a-z]|_)+([A-Z][a-z]+)*$"],
+        "no-underscore-dangle": "off"
+    }
+}
