@@ -24,6 +24,9 @@ function handleError(error, res) {
     case 'ValidationError':
       res.status(400).send({ message: `${error.name}: ${error.message}` });
       break;
+    case 'CastError':
+      res.status(400).send({ message: `${error.name}: ${error.message}` });
+      break;
     default:
       res.status(500).send({ message: `${error.name}: ${error.message}` });
       break;

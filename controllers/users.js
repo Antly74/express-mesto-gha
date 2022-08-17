@@ -44,7 +44,7 @@ module.exports.patchUserMe = (req, res) => {
     .findByIdAndUpdate(
       req.user._id,
       { name, about },
-      { returnDocument: 'after' },
+      { returnDocument: 'after', runValidators: true },
     )
     .orFail(() => {
       throw new NotFoundError();
@@ -57,7 +57,7 @@ module.exports.patchUserMeAvatar = (req, res) => {
   const { avatar } = req.body;
 
   userModel
-    .findByIdAndUpdate(req.user._id, { avatar }, { returnDocument: 'after' })
+    .findByIdAndUpdate(req.user._id, { avatar }, { returnDocument: 'after', runValidators: true })
     .orFail(() => {
       throw new NotFoundError();
     })
