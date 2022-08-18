@@ -16,21 +16,4 @@ class NotFoundError extends ApplicationError {
   }
 }
 
-function handleError(error, res) {
-  switch (error.name) {
-    case 'NotFoundError':
-      res.status(error.status).send({ message: `${error.name}: ${error.message}` });
-      break;
-    case 'ValidationError':
-      res.status(400).send({ message: `${error.name}: ${error.message}` });
-      break;
-    case 'CastError':
-      res.status(400).send({ message: `${error.name}: ${error.message}` });
-      break;
-    default:
-      res.status(500).send({ message: `${error.name}: ${error.message}` });
-      break;
-  }
-}
-
-module.exports = { NotFoundError, handleError };
+module.exports = { NotFoundError };

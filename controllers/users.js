@@ -1,4 +1,4 @@
-const { NotFoundError, handleError } = require('../utils/error');
+const { NotFoundError } = require('../utils/error');
 const userModel = require('../models/user');
 
 module.exports.createUser = (req, res) => {
@@ -7,14 +7,20 @@ module.exports.createUser = (req, res) => {
   userModel
     .create({ name, about, avatar })
     .then((user) => res.status(201).send(user))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.getUsers = (req, res) => {
   userModel
     .find({})
     .then((users) => res.send(users))
-    .catch((err) => handleError(err, res));
+    .catch((err) => res.status(500).send({ message: `${err.name}: ${err.message}` }));
 };
 
 module.exports.getUsersMe = (req, res) => {
@@ -24,7 +30,13 @@ module.exports.getUsersMe = (req, res) => {
       throw new NotFoundError();
     })
     .then((user) => res.send(user))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.getUsersById = (req, res) => {
@@ -34,7 +46,13 @@ module.exports.getUsersById = (req, res) => {
       throw new NotFoundError();
     })
     .then((user) => res.send(user))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.patchUserMe = (req, res) => {
@@ -44,23 +62,39 @@ module.exports.patchUserMe = (req, res) => {
     .findByIdAndUpdate(
       req.user._id,
       { name, about },
-      { returnDocument: 'after', runValidators: true },
+      { new: true, runValidators: true },
     )
     .orFail(() => {
       throw new NotFoundError();
     })
     .then((user) => res.send(user))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.patchUserMeAvatar = (req, res) => {
   const { avatar } = req.body;
 
   userModel
-    .findByIdAndUpdate(req.user._id, { avatar }, { returnDocument: 'after', runValidators: true })
+    .findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
       throw new NotFoundError();
     })
     .then((user) => res.send(user))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };

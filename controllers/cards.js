@@ -1,4 +1,4 @@
-const { NotFoundError, handleError } = require('../utils/error');
+const { NotFoundError } = require('../utils/error');
 const cardModel = require('../models/card');
 
 module.exports.createCard = (req, res) => {
@@ -6,19 +6,23 @@ module.exports.createCard = (req, res) => {
 
   cardModel
     .create({ name, link, owner: req.user._id })
-    .then((card) => card.populate('owner'))
     .then((card) => {
       res.status(201).send(card);
     })
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.getCards = (req, res) => {
   cardModel
     .find({})
-    .populate('owner likes')
     .then((cards) => res.send(cards))
-    .catch((err) => handleError(err, res));
+    .catch((err) => res.status(500).send({ message: `${err.name}: ${err.message}` }));
 };
 
 module.exports.deleteCard = (req, res) => {
@@ -30,11 +34,15 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => {
       if (card) {
         res.send({ message: 'Пост удален' });
-      } else {
-        res.send({ message: 'Такого поста уже нет' });
       }
     })
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.likeCard = (req, res) => {
@@ -47,9 +55,14 @@ module.exports.likeCard = (req, res) => {
     .orFail(() => {
       throw new NotFoundError();
     })
-    .populate('owner likes')
     .then((card) => res.send(card))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
@@ -62,7 +75,12 @@ module.exports.dislikeCard = (req, res) => {
     .orFail(() => {
       throw new NotFoundError();
     })
-    .populate('owner likes')
     .then((card) => res.send(card))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message}` });
+      }
+    });
 };
