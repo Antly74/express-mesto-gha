@@ -1,7 +1,7 @@
 const { NotFoundError } = require('../utils/error');
 const cardModel = require('../models/card');
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   cardModel
@@ -9,78 +9,57 @@ module.exports.createCard = (req, res) => {
     .then((card) => {
       res.status(201).send(card);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `${err.name}: ${err.message}` });
-      } else {
-        res.status(500).send({ message: `${err.name}: ${err.message}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   cardModel
     .find({})
     .then((cards) => res.send(cards))
-    .catch((err) => res.status(500).send({ message: `${err.name}: ${err.message}` }));
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
+  const { cardId: id } = req.params;
   cardModel
-    .findByIdAndRemove(req.params.cardId)
+    .findByIdAndRemove(id)
     .orFail(() => {
-      throw new NotFoundError();
+      throw new NotFoundError(`Карточка с id = ${id} не найдена!`);
     })
     .then((card) => {
       if (card) {
         res.send({ message: 'Пост удален' });
       }
     })
-    .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
-      } else {
-        res.status(500).send({ message: `${err.name}: ${err.message}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
+  const { cardId: id } = req.params;
   cardModel
     .findByIdAndUpdate(
-      req.params.cardId,
+      id,
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
     )
     .orFail(() => {
-      throw new NotFoundError();
+      throw new NotFoundError(`Карточка с id = ${id} не найдена!`);
     })
     .then((card) => res.send(card))
-    .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
-      } else {
-        res.status(500).send({ message: `${err.name}: ${err.message}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
+  const { cardId: id } = req.params;
   cardModel
     .findByIdAndUpdate(
-      req.params.cardId,
+      id,
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
     )
     .orFail(() => {
-      throw new NotFoundError();
+      throw new NotFoundError(`Карточка с id = ${id} не найдена!`);
     })
     .then((card) => res.send(card))
-    .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        res.status(err.status).send({ message: `${err.name}: ${err.message}` });
-      } else {
-        res.status(500).send({ message: `${err.name}: ${err.message}` });
-      }
-    });
+    .catch(next);
 };

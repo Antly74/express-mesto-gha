@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file */
+
 class ApplicationError extends Error {
   constructor(status = 500, message = 'Что-то пошло не так!') {
     super();
@@ -16,4 +17,35 @@ class NotFoundError extends ApplicationError {
   }
 }
 
-module.exports = { NotFoundError };
+class LoginError extends ApplicationError {
+  constructor(message = 'Неверный логин или пароль') {
+    super(401, message);
+  }
+}
+
+class ValidationError extends ApplicationError {
+  constructor(message = 'Неверный логин или пароль') {
+    super(400, message);
+  }
+}
+
+function handleError(err, req, res, next) {
+  const { name, message, code = 0 } = err;
+  let { status = 500 } = err;
+  if (name === 'CastError' || name === 'ValidationError') {
+    status = 400;
+  } else if (code === 11000) {
+    status = 409;
+  }
+
+  res.status(status).send({ message: `${name}: ${message}` });
+
+  next();
+}
+
+module.exports = {
+  NotFoundError,
+  LoginError,
+  ValidationError,
+  handleError,
+};
