@@ -5,7 +5,7 @@ const cardControllers = require('../controllers/cards');
 cardRouter.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().regex(/^https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=]*$/i),
+    link: Joi.string().uri().required(),
   }),
 }), cardControllers.createCard);
 

@@ -1,4 +1,4 @@
-const { NotFoundError } = require('../utils/error');
+const { NotFoundError, ForbiddenError } = require('../utils/error');
 const cardModel = require('../models/card');
 
 module.exports.createCard = (req, res, next) => {
@@ -22,9 +22,15 @@ module.exports.getCards = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   const { cardId: id } = req.params;
   cardModel
-    .findByIdAndRemove(id)
+    .findById(id)
     .orFail(() => {
       throw new NotFoundError(`Карточка с id = ${id} не найдена!`);
+    })
+    .then((card) => {
+      if (!card.owner.equals(req.user._id)) {
+        throw new ForbiddenError();
+      }
+      return card.deleteOne();
     })
     .then((card) => {
       if (card) {

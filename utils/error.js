@@ -29,6 +29,12 @@ class ValidationError extends ApplicationError {
   }
 }
 
+class ForbiddenError extends ApplicationError {
+  constructor(message = 'Вы не можете удалить чужую карточку') {
+    super(403, message);
+  }
+}
+
 function handleError(err, req, res, next) {
   const { name, message, code = 0 } = err;
   let { status = 500 } = err;
@@ -47,5 +53,6 @@ module.exports = {
   NotFoundError,
   LoginError,
   ValidationError,
+  ForbiddenError,
   handleError,
 };
