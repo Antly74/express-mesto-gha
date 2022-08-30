@@ -20,7 +20,7 @@ userRouter.patch('/me', celebrate({
 
 userRouter.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().uri().required(),
+    avatar: Joi.string().pattern(/^https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=]*$/i).required(),
   }),
 }), userControllers.patchUserMeAvatar);
 
