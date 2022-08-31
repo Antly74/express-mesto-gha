@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
-const { handleError } = require('./utils/error');
+const { NotFoundError, handleError } = require('./utils/error');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middleware/auth');
 
@@ -38,8 +38,8 @@ app.post('/signup', celebrate({
 app.use('/users', auth, require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
-app.all('*', (req, res) => {
-  res.status(404).send({ message: 'Такого маршрута не существует' });
+app.all('*', auth, (req, res, next) => {
+  next(new NotFoundError('Страница не найдена!'));
 });
 
 app.use(errors());
